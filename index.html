@@ -4,17 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Be My Valentine?</title>
-
     <link rel="icon" type="image/png" href="favicon.png" />
-
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
     />
     <link rel="stylesheet" href="style.css" />
+    <!-- Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <style>
+      /* Simple utility for toggling */
+      .hidden {
+        display: none !important;
+      }
+    </style>
   </head>
   <body>
-    <div class="pinksection" id="bg-container">
+    <!-- AUDIO ELEMENT -->
+    <audio id="mySong" loop>
+      <source src="Taylor Swift-Blank Space.mp3" type="audio/mp3" />
+    </audio>
+
+    <!-- === SCREEN 1: INTRO === -->
+    <div id="screen-intro" class="pinksection" id="bg-container">
       <div class="curvedCard animate__animated animate__zoomIn">
         <img src="OJXMDX0.jpg" alt="Cute Valentine" class="cute-gif" />
 
@@ -27,17 +39,206 @@
         </div>
 
         <div class="button-container">
-          <a href="page.html">
-            <button class="btn btn-yes">Yess!!</button>
-          </a>
+          <!-- onclick triggers the transition -->
+          <button class="btn btn-yes" onclick="startSurprise()">Yess!!</button>
           <button class="btn" id="runaway-btn">No!!</button>
         </div>
       </div>
     </div>
 
+    <!-- === SCREEN 2: SURPRISE === -->
+    <div id="screen-surprise" style="display: none">
+      <div id="overlay"></div>
+
+      <div class="pinksection">
+        <div class="curvedCard">
+          <h2 class="heading2 animate__backInDown">I knew it!!!</h2>
+        </div>
+      </div>
+
+      <div id="mystery-box">
+        <div class="lid-container" onclick="openBox()">🎁</div>
+        <div class="message-content">
+          <h2>It’s a Date! 🌹</h2>
+          <p>
+            Pick you up at 7 PM? I promise there will be chocolates (and maybe
+            real roses too). Can't wait to see you!
+          </p>
+        </div>
+      </div>
+    </div>
+
     <script>
-      // 1. ADD BACKGROUND FLOATING TEXT (Kept same)
-      const bgContainer = document.getElementById("bg-container");
+      // Global Vars
+      const audio = document.getElementById("mySong");
+      let showerInterval;
+
+      // ==========================================
+      // 1. TRANSITION LOGIC
+      // ==========================================
+      function startSurprise() {
+        // Play Audio IMMEDIATELY (User interaction context is valid here)
+        playAudio();
+
+        // Hide Intro, Show Surprise
+        document.getElementById("screen-intro").style.display = "none";
+        document.getElementById("screen-surprise").style.display = "block";
+
+        // Start the Page 2 Timeline
+        runSurpriseTimeline();
+      }
+
+      function playAudio() {
+        audio.volume = 0;
+        audio
+          .play()
+          .then(() => {
+            // Fade In
+            let vol = 0;
+            const fade = setInterval(() => {
+              if (vol < 0.5) {
+                vol += 0.05;
+                audio.volume = vol;
+              } else {
+                clearInterval(fade);
+              }
+            }, 200);
+          })
+          .catch((e) => console.log("Audio play failed:", e));
+      }
+
+      // ==========================================
+      // 2. SURPRISE TIMELINE
+      // ==========================================
+      function runSurpriseTimeline() {
+        // 0s: Start Confetti Shower
+        startShower("🎊");
+
+        // 6s: Dim Background & Pop Up Box
+        setTimeout(() => {
+          document.getElementById("overlay").classList.add("active");
+          document.getElementById("mystery-box").classList.add("appear");
+        }, 6000);
+
+        // 7.5s: Auto-Open Box & MEGA Confetti
+        setTimeout(() => {
+          openBox();
+        }, 7500);
+
+        // 10s: Switch to different Shower
+        setTimeout(() => {
+          startShower("💐");
+        }, 10000);
+      }
+
+      function openBox() {
+        const box = document.getElementById("mystery-box");
+        if (!box.classList.contains("open")) {
+          box.classList.add("open");
+          shootMassiveConfetti();
+        }
+      }
+
+      // ==========================================
+      // 3. SHOWERS & CONFETTI
+      // ==========================================
+      function createHeart(emoji) {
+        const heart = document.createElement("div");
+        heart.classList.add("heart");
+        heart.innerText = emoji || "💗"; // Default
+
+        heart.style.left = Math.random() * 95 + "vw";
+        heart.style.animationDuration = Math.random() * 3 + 3 + "s";
+        heart.style.fontSize = Math.random() * 20 + 20 + "px";
+        heart.style.top = "-60px";
+
+        document.body.appendChild(heart);
+        setTimeout(() => {
+          heart.remove();
+        }, 6000);
+      }
+
+      // Overloaded to support existing logic
+      function createFallingItem(emoji) {
+        createHeart(emoji);
+      }
+
+      function startShower(emojiType) {
+        if (showerInterval) clearInterval(showerInterval);
+        showerInterval = setInterval(() => {
+          createHeart(emojiType);
+        }, 300);
+      }
+
+      function shootMassiveConfetti() {
+        if (typeof confetti === "undefined") return;
+
+        const duration = 3000;
+        const animationEnd = Date.now() + duration;
+        const defaults = {
+          startVelocity: 45,
+          spread: 360,
+          ticks: 100,
+          zIndex: 2000,
+        };
+        const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+        let emojiShapes = [];
+        try {
+          if (typeof confetti.shapeFromText === "function") {
+            emojiShapes.push(confetti.shapeFromText({ text: "🎉", scalar: 3 }));
+            emojiShapes.push(confetti.shapeFromText({ text: "🎈", scalar: 3 }));
+            emojiShapes.push(confetti.shapeFromText({ text: "⭐", scalar: 3 }));
+          }
+        } catch (e) {}
+
+        const interval = setInterval(function () {
+          const timeLeft = animationEnd - Date.now();
+          if (timeLeft <= 0) return clearInterval(interval);
+
+          const particleCount = 70 * (timeLeft / duration);
+
+          confetti(
+            Object.assign({}, defaults, {
+              particleCount,
+              origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+            }),
+          );
+          confetti(
+            Object.assign({}, defaults, {
+              particleCount,
+              origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+            }),
+          );
+
+          if (emojiShapes.length > 0 && Math.random() > 0.7) {
+            confetti(
+              Object.assign({}, defaults, {
+                shapes: emojiShapes,
+                scalar: 2,
+                particleCount: 15,
+                spread: 100,
+                origin: { x: randomInRange(0.2, 0.8), y: Math.random() - 0.2 },
+              }),
+            );
+          }
+        }, 200);
+
+        setTimeout(() => {
+          confetti({
+            particleCount: 200,
+            spread: 150,
+            origin: { y: 0.6 },
+            shapes: ["circle", "square"],
+            colors: ["#FFD700", "#FF69B4", "#00BFFF"],
+          });
+        }, 1500);
+      }
+
+      // ==========================================
+      // 4. BACKGROUND DECORATION (INTRO)
+      // ==========================================
+      const bgContainer = document.getElementById("screen-intro"); // Ensure correct container
       const phrases = [
         "I Love You",
         "Be Mine",
@@ -61,93 +262,85 @@
         el.style.transform = `rotate(${Math.random() * 360}deg)`;
         bgContainer.appendChild(el);
       }
-
       for (let i = 0; i < 15; i++) {
         spawnBackgroundText();
       }
 
-      // 2. FALLING HEARTS (Kept same)
-      function createHeart() {
-        const heart = document.createElement("div");
-        heart.classList.add("heart");
-        heart.innerText = "💗";
-        heart.style.left = Math.random() * 100 + "vw";
-        heart.style.animationDuration = Math.random() * 3 + 3 + "s";
-        heart.style.fontSize = Math.random() * 20 + 10 + "px";
-        document.body.appendChild(heart);
-        setTimeout(() => {
-          heart.remove();
-        }, 6000);
-      }
-      setInterval(createHeart, 300);
+      // Start initial heart shower for intro
+      setInterval(() => {
+        // Only spawn if intro is visible, otherwise let main shower handle it
+        if (document.getElementById("screen-intro").style.display !== "none") {
+          createHeart("💗");
+        }
+      }, 300);
 
       // ==========================================
-      // 3. SAFE ZONE RUNAWAY LOGIC
+      // 5. RUNAWAY BUTTON LOGIC
       // ==========================================
-
       const btn = document.getElementById("runaway-btn");
 
       const moveButton = () => {
-        // use standard viewport
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
+        const vw = Math.min(
+          window.innerWidth,
+          window.visualViewport
+            ? window.visualViewport.width
+            : window.innerWidth,
+        );
+        const vh = Math.min(
+          window.innerHeight,
+          window.visualViewport
+            ? window.visualViewport.height
+            : window.innerHeight,
+        );
 
         const btnWidth = btn.offsetWidth;
         const btnHeight = btn.offsetHeight;
 
-        // Use a 15% safety margin total (7.5% on each side)
-        // This keeps it well away from address bars and bottom nav
-        const xBuffer = vw * 0.075;
-        const yBuffer = vh * 0.075;
+        const padding = 50; // Strict 50px buffer from edges
 
-        // Calculate the safe playable area (85% of screen)
-        const safeWidth = vw - xBuffer * 2 - btnWidth;
-        const safeHeight = vh - yBuffer * 2 - btnHeight;
+        // Calculate max possible positions
+        const maxLeft = vw - btnWidth - padding;
+        const maxTop = vh - btnHeight - padding;
 
-        // Generate random position within that safe area
-        const randomX = Math.random() * safeWidth;
-        const randomY = Math.random() * safeHeight;
+        // Generate random position
+        let newX = Math.random() * maxLeft;
+        let newY = Math.random() * maxTop;
 
-        // Add the buffer to center it
-        const finalX = xBuffer + randomX;
-        const finalY = yBuffer + randomY;
+        // CLAMP: Ensure it's at least 'padding' from top/left, and at most 'maxLeft/Top'
+        newX = Math.max(padding, Math.min(newX, maxLeft));
+        newY = Math.max(padding, Math.min(newY, maxTop));
 
-        // Force Fixed Position
+        // Apply
         btn.style.position = "fixed";
-        btn.style.left = `${finalX}px`;
-        btn.style.top = `${finalY}px`;
-
-        // Ensure z-index is high enough
+        btn.style.left = `${newX}px`;
+        btn.style.top = `${newY}px`;
         btn.style.zIndex = "9999";
+        btn.style.transform = "none"; // Prevent any CSS transforms from moving it further
       };
 
-      // DESKTOP: Run away when mouse gets close
+      // Desktop
       document.addEventListener("mousemove", (e) => {
+        // Only run if intro is visible
+        if (document.getElementById("screen-intro").style.display === "none")
+          return;
+
         const btnRect = btn.getBoundingClientRect();
         const btnCenterX = btnRect.left + btnRect.width / 2;
         const btnCenterY = btnRect.top + btnRect.height / 2;
-
-        // Calculate distance
         const distance = Math.hypot(
           e.clientX - btnCenterX,
           e.clientY - btnCenterY,
         );
 
-        // If mouse is closer than 100px, move it
-        if (distance < 100) {
-          moveButton();
-        }
+        if (distance < 100) moveButton();
       });
-
-      // MOBILE: Run away on Touch START (before click)
+      // Mobile
       btn.addEventListener("touchstart", (e) => {
-        e.preventDefault(); // Prevent actual click
+        e.preventDefault();
         moveButton();
       });
-
-      // FALLBACK: Run away on Click (for fast tappers)
       btn.addEventListener("click", (e) => {
-        e.preventDefault(); // ensure it doesn't trigger anything
+        e.preventDefault();
         moveButton();
       });
     </script>
