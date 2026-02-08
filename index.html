@@ -36,7 +36,7 @@
     </div>
 
     <script>
-      // 1. ADD BACKGROUND FLOATING TEXT
+      // 1. ADD BACKGROUND FLOATING TEXT (Kept same)
       const bgContainer = document.getElementById("bg-container");
       const phrases = [
         "I Love You",
@@ -55,12 +55,10 @@
         const el = document.createElement("div");
         el.classList.add("bg-floater");
         el.innerText = phrases[Math.floor(Math.random() * phrases.length)];
-
         el.style.left = Math.random() * 90 + "vw";
         el.style.top = Math.random() * 90 + "vh";
         el.style.fontSize = Math.random() * 20 + 20 + "px";
         el.style.transform = `rotate(${Math.random() * 360}deg)`;
-
         bgContainer.appendChild(el);
       }
 
@@ -68,16 +66,14 @@
         spawnBackgroundText();
       }
 
-      // 2. FALLING HEARTS
+      // 2. FALLING HEARTS (Kept same)
       function createHeart() {
         const heart = document.createElement("div");
         heart.classList.add("heart");
         heart.innerText = "💗";
-
         heart.style.left = Math.random() * 100 + "vw";
         heart.style.animationDuration = Math.random() * 3 + 3 + "s";
         heart.style.fontSize = Math.random() * 20 + 10 + "px";
-
         document.body.appendChild(heart);
         setTimeout(() => {
           heart.remove();
@@ -85,68 +81,74 @@
       }
       setInterval(createHeart, 300);
 
-      // 3. RUNAWAY BUTTON LOGIC
-      const btn = document.getElementById("runaway-btn");
-      let movedToBody = false;
+      // ==========================================
+      // 3. SAFE ZONE RUNAWAY LOGIC
+      // ==========================================
 
-      // Ensure button stays in flow initially, but breaks out when interacted with
-      function runAway(e) {
+      const btn = document.getElementById("runaway-btn");
+
+      const moveButton = () => {
+        // use standard viewport
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
+        const btnWidth = btn.offsetWidth;
+        const btnHeight = btn.offsetHeight;
+
+        // Use a 15% safety margin total (7.5% on each side)
+        // This keeps it well away from address bars and bottom nav
+        const xBuffer = vw * 0.075;
+        const yBuffer = vh * 0.075;
+
+        // Calculate the safe playable area (85% of screen)
+        const safeWidth = vw - xBuffer * 2 - btnWidth;
+        const safeHeight = vh - yBuffer * 2 - btnHeight;
+
+        // Generate random position within that safe area
+        const randomX = Math.random() * safeWidth;
+        const randomY = Math.random() * safeHeight;
+
+        // Add the buffer to center it
+        const finalX = xBuffer + randomX;
+        const finalY = yBuffer + randomY;
+
+        // Force Fixed Position
+        btn.style.position = "fixed";
+        btn.style.left = `${finalX}px`;
+        btn.style.top = `${finalY}px`;
+
+        // Ensure z-index is high enough
+        btn.style.zIndex = "9999";
+      };
+
+      // DESKTOP: Run away when mouse gets close
+      document.addEventListener("mousemove", (e) => {
         const btnRect = btn.getBoundingClientRect();
         const btnCenterX = btnRect.left + btnRect.width / 2;
         const btnCenterY = btnRect.top + btnRect.height / 2;
 
+        // Calculate distance
         const distance = Math.hypot(
           e.clientX - btnCenterX,
           e.clientY - btnCenterY,
         );
-        const offset = 50; // Distance to trigger running
 
-        if (distance < offset) {
-          // If it's the first time running, move it to body to escape the card's transform context
-          if (!movedToBody) {
-            // Calculate current position
-            const currentLeft = btnRect.left;
-            const currentTop = btnRect.top;
-
-            // Move logic
-            document.body.appendChild(btn);
-            btn.style.position = "fixed";
-            btn.style.left = currentLeft + "px";
-            btn.style.top = currentTop + "px";
-            movedToBody = true;
-          }
-
-          // Calculate available space
-          const maxX = window.innerWidth - btnRect.width - 50;
-          const maxY = window.innerHeight - btnRect.height - 50;
-
-          const newX = Math.random() * maxX;
-          const newY = Math.random() * maxY;
-
-          // Apply new coordinates
-          btn.style.left = `${newX}px`;
-          btn.style.top = `${newY}px`;
+        // If mouse is closer than 100px, move it
+        if (distance < 100) {
+          moveButton();
         }
-      }
+      });
 
-      document.addEventListener("mousemove", runAway);
-
-      // ... existing mousemove code ...
-
-      // ADD THIS FOR MOBILE SUPPORT
+      // MOBILE: Run away on Touch START (before click)
       btn.addEventListener("touchstart", (e) => {
-        // Prevent the click from happening
-        e.preventDefault();
+        e.preventDefault(); // Prevent actual click
+        moveButton();
+      });
 
-        const btnRect = btn.getBoundingClientRect();
-        const maxX = window.innerWidth - btnRect.width - 20;
-        const maxY = window.innerHeight - btnRect.height - 20;
-
-        const newX = Math.random() * maxX;
-        const newY = Math.random() * maxY;
-
-        btn.style.left = `${newX}px`;
-        btn.style.top = `${newY}px`;
+      // FALLBACK: Run away on Click (for fast tappers)
+      btn.addEventListener("click", (e) => {
+        e.preventDefault(); // ensure it doesn't trigger anything
+        moveButton();
       });
     </script>
   </body>

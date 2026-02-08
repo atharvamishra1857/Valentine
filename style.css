@@ -6,9 +6,11 @@
 }
 
 body {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   overflow: hidden; /* No scrollbars */
+  position: fixed; /* Lock screen prevents scrolling */
+  touch-action: none; /* Disable touch scrolling */
   font-family: "Poppins", "Comic Sans MS", sans-serif;
   /* Cute Gradient Background */
   background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
