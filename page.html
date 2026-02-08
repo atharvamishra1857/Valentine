@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Surprise Page</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+    <style>
+      /* --- 4. FIX: PREVENT SCROLL BARS --- */
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* This kills the scrollbars */
+        height: 100vh;
+        width: 100vw;
+      }
+
+      .pinksection {
+        position: relative;
+        z-index: 5; /* Lower than box/overlay */
+      }
+
+      /* --- 3. FIX: BACKDROP OVERLAY --- */
+      /* This dims the background text so the box looks clean */
+      #overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5); /* Dark semi-transparent */
+        z-index: 999; /* Behind box, above text */
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s ease;
+      }
+
+      #overlay.active {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      /* --- 1. FIX: TWO-STEP BOX ANIMATION --- */
+      #mystery-box {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0); /* Start Tiny */
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        text-align: center;
+        z-index: 1000;
+        width: 300px;
+        transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      #mystery-box.appear {
+        transform: translate(-50%, -50%) scale(1); /* Pop in */
+      }
+
+      /* The Lid (Gift Emoji) */
+      .lid-container {
+        font-size: 80px;
+        transition:
+          transform 0.8s ease,
+          opacity 0.5s ease;
+        cursor: pointer;
+        margin-bottom: 0;
+      }
+
+      /* The Message (Hidden initially) */
+      .message-content {
+        height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transform: translateY(20px);
+        transition: all 0.8s ease;
+      }
+
+      .message-content h2 {
+        color: #d81b60;
+        margin-bottom: 10px;
+        font-size: 2rem;
+      }
+
+      /* STATE: OPEN BOX */
+      #mystery-box.open .lid-container {
+        transform: translateY(-100px) scale(0.5); /* Fly up and shrink */
+        opacity: 0; /* Fade out */
+        position: absolute; /* Remove from flow so text moves up */
+      }
+
+      #mystery-box.open .message-content {
+        height: auto;
+        opacity: 1;
+        transform: translateY(0);
+        padding-top: 10px;
+      }
+
+      /* FALLING ITEMS STYLE */
+      .heart {
+        position: fixed; /* Fixed prevents scrollbar issues better than absolute */
+        z-index: 10; /* Above background, below overlay */
+        pointer-events: none; /* User can click through them */
+      }
+    </style>
+  </head>
+  <body>
+    <div id="overlay"></div>
+
+    <div class="pinksection">
+      <div class="curvedCard">
+        <h2 class="heading2 animate__backInDown">I knew it!!!</h2>
+      </div>
+    </div>
+
+    <div id="mystery-box">
+      <div class="lid-container">🎁</div>
+
+      <div class="message-content">
+        <h2>Surprise! 🎉</h2>
+        <p>Here is the special message you wanted to reveal.</p>
+      </div>
+    </div>
+
+    <audio id="mySong" loop>
+      <source src="Taylor Swift-Blank Space.mp3" type="audio/mp3" />
+    </audio>
+
+    <script>
+      let showerInterval;
+
+      // --- SHOWER ENGINE ---
+      function createFallingItem(emoji) {
+        const item = document.createElement("div");
+        item.classList.add("heart");
+        item.innerText = emoji;
+        // 95vw ensures it doesn't spawn exactly on the edge and cause scrollbar
+        item.style.left = Math.random() * 95 + "vw";
+        item.style.animationDuration = Math.random() * 3 + 2 + "s";
+        item.style.fontSize = Math.random() * 10 + 50 + "px";
+        item.style.top = "-60px";
+
+        document.body.appendChild(item);
+
+        setTimeout(() => {
+          item.remove();
+        }, 6000);
+      }
+
+      function startShower(emojiType) {
+        if (showerInterval) clearInterval(showerInterval);
+        showerInterval = setInterval(() => {
+          createFallingItem(emojiType);
+        }, 300);
+      }
+
+      // --- 2. FIX: MEGA CONFETTI FUNCTION ---
+      function shootMassiveConfetti() {
+        // Safety check: ensure library is loaded
+        if (typeof confetti === "undefined") {
+          console.error(
+            "Confetti library not loaded! Check internet connection/CDN.",
+          );
+          return;
+        }
+
+        const duration = 3000;
+        const animationEnd = Date.now() + duration;
+        const defaults = {
+          startVelocity: 45,
+          spread: 360,
+          ticks: 100,
+          zIndex: 2000,
+        };
+
+        const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+        // Try to create emoji shapes, fallback to empty array if not supported
+        let emojiShapes = [];
+        try {
+          if (typeof confetti.shapeFromText === "function") {
+            emojiShapes.push(confetti.shapeFromText({ text: "🎉", scalar: 3 }));
+            emojiShapes.push(confetti.shapeFromText({ text: "🎈", scalar: 3 }));
+            emojiShapes.push(confetti.shapeFromText({ text: "⭐", scalar: 3 }));
+          }
+        } catch (e) {
+          console.warn(
+            "Shape from text not supported, falling back to standard confetti:",
+            e,
+          );
+        }
+
+        const interval = setInterval(function () {
+          const timeLeft = animationEnd - Date.now();
+
+          if (timeLeft <= 0) {
+            return clearInterval(interval);
+          }
+
+          const particleCount = 70 * (timeLeft / duration);
+
+          // Fire standard confetti (circles, squares)
+          confetti(
+            Object.assign({}, defaults, {
+              particleCount,
+              origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+            }),
+          );
+          confetti(
+            Object.assign({}, defaults, {
+              particleCount,
+              origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+            }),
+          );
+
+          // Fire Emoji Confetti bursts occasionally
+          if (emojiShapes.length > 0) {
+            if (Math.random() > 0.7) {
+              confetti(
+                Object.assign({}, defaults, {
+                  shapes: emojiShapes,
+                  scalar: 2,
+                  particleCount: 15,
+                  spread: 100,
+                  origin: {
+                    x: randomInRange(0.2, 0.8),
+                    y: Math.random() - 0.2,
+                  },
+                }),
+              );
+            }
+          }
+        }, 200);
+
+        // Final big burst at the center
+        setTimeout(() => {
+          confetti({
+            particleCount: 200,
+            spread: 150,
+            origin: { y: 0.6 },
+            shapes: ["circle", "square"],
+            colors: ["#FFD700", "#FF69B4", "#00BFFF"],
+          });
+        }, 1500);
+      }
+
+      // ============================================
+      // THE TIMELINE
+      // ============================================
+
+      // 0s: Start Candies
+      startShower("🎊");
+
+      // 6s: Phase 1 - Dim Background & Pop up Closed Box
+      setTimeout(() => {
+        document.getElementById("overlay").classList.add("active");
+        document.getElementById("mystery-box").classList.add("appear");
+      }, 6000);
+
+      // 7.5s: Phase 2 - Open Box & MEGA Confetti
+      setTimeout(() => {
+        document.getElementById("mystery-box").classList.add("open");
+        shootMassiveConfetti(); // Fire the big one
+      }, 7500);
+
+      // 10s: Phase 3 - Switch to Roses
+      setTimeout(() => {
+        startShower("💐");
+      }, 10000);
+
+      // --- MUSIC FADE-IN CONFIGURATION ---
+      const music = document.getElementById("mySong");
+      const targetVolume = 0.4; // Max volume (0.0 to 1.0)
+      const fadeDuration = 200; // How fast the volume increases (in ms)
+      const volumeStep = 0.05; // How much to increase per step
+
+      function fadeInAudio() {
+        music.volume = 0; // Start silent
+        music
+          .play()
+          .then(() => {
+            // Start the fade-in loop
+            const fadeInterval = setInterval(() => {
+              // If we haven't reached the target volume yet...
+              if (music.volume < targetVolume) {
+                // Increase volume, but ensure we don't go over 1.0
+                music.volume = Math.min(
+                  music.volume + volumeStep,
+                  targetVolume,
+                );
+              } else {
+                // Target reached, stop the loop
+                clearInterval(fadeInterval);
+              }
+            }, fadeDuration);
+          })
+          .catch((error) => {
+            // BROWSER POLICY BLOCK:
+            // If the browser blocks autoplay, we wait for the FIRST interaction
+            console.log("Autoplay blocked. Waiting for click.");
+            document.body.addEventListener(
+              "click",
+              () => {
+                fadeInAudio(); // Try again when they click
+              },
+              { once: true },
+            );
+          });
+      }
+
+      // Run this as soon as the page loads
+      window.addEventListener("load", fadeInAudio);
+    </script>
+  </body>
+</html>

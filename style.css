@@ -1,0 +1,169 @@
+/* --- 1. RESET & GLOBAL --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden; /* No scrollbars */
+  font-family: "Poppins", "Comic Sans MS", sans-serif;
+  /* Cute Gradient Background */
+  background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+  background-color: #ffdde1;
+}
+
+/* --- 2. BACKGROUND TEXTURE (Polka Dots) --- */
+.pinksection {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  background-color: #ffdde1;
+  background-image:
+    radial-gradient(#d81b60 1px, transparent 1px),
+    radial-gradient(#d81b60 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position:
+    0 0,
+    20px 20px;
+}
+
+/* --- 3. FLOATING BACKGROUND WORDS --- */
+.bg-floater {
+  position: absolute;
+  opacity: 0.15;
+  font-weight: bold;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+  color: #d81b60;
+  white-space: nowrap;
+}
+
+/* --- 4. MAIN CARD (Glassmorphism) --- */
+.curvedCard {
+  background: rgba(255, 255, 255, 0.85); /* See-through effect */
+  backdrop-filter: blur(8px); /* Blurs the background behind card */
+  padding: 40px;
+  border-radius: 30px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  z-index: 10;
+  width: 90%;
+  max-width: 450px; /* Prevents it from getting too wide */
+  border: 4px dashed #ff80ab; /* Stitching border effect */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px; /* Space between elements */
+}
+
+/* --- 5. IMAGE STYLING --- */
+.cute-gif {
+  width: 100%;
+  max-width: 250px; /* Control image size */
+  height: auto;
+  border-radius: 15px;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* --- 6. TEXT STYLING --- */
+h1.first-head {
+  color: #d81b60;
+  font-size: 2rem;
+  margin: 0;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+/* --- 7. BUTTONS --- */
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px; /* Space between Yes and No */
+  width: 100%;
+  min-height: 80px; /* Ensures space is reserved */
+  position: relative;
+}
+
+.btn {
+  padding: 12px 30px;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* YES Button */
+.btn-yes {
+  background-color: #ff4081;
+  color: white;
+}
+
+.btn-yes:hover {
+  transform: scale(1.1);
+  background-color: #f50057;
+  box-shadow: 0 8px 20px rgba(245, 0, 87, 0.4);
+}
+
+/* NO Button */
+#runaway-btn {
+  background-color: #eceff1;
+  color: #333;
+  /* Removed fixed position so it lays out naturally at first */
+  z-index: 100;
+  position: relative; /* Default state */
+}
+
+/* --- 8. FALLING HEARTS --- */
+.heart {
+  position: fixed;
+  color: #e91e63;
+  z-index: 1000;
+  pointer-events: none;
+  top: -50px;
+  animation: fall linear forwards;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(110vh) rotate(360deg);
+  }
+}
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media only screen and (max-width: 600px) {
+  /* 1. Make the text smaller so it fits */
+  h1.first-head {
+    font-size: 1.5rem; /* Shrink from 2rem */
+  }
+
+  /* 2. Shrink the card padding */
+  .curvedCard {
+    padding: 20px; /* Less padding on small screens */
+    width: 95%; /* Take up more screen width */
+  }
+
+  /* 3. Make the image smaller */
+  .cute-gif {
+    max-width: 150px; /* Shrink the bear/image */
+  }
+
+  /* 4. Stack the buttons if needed (optional) */
+  .button-container {
+    flex-direction: column; /* Stack Yes/No vertically if they get squished */
+    gap: 15px;
+  }
+}

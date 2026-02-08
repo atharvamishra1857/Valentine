@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Be My Valentine?</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="pinksection" id="bg-container">
+      <div class="curvedCard animate__animated animate__zoomIn">
+        <img src="OJXMDX0.jpg" alt="Cute Valentine" class="cute-gif" />
+
+        <div class="questions">
+          <h1
+            class="first-head animate__animated animate__pulse animate__infinite"
+          >
+            Will You Be My Valentine? 🌹
+          </h1>
+        </div>
+
+        <div class="button-container">
+          <a href="page.html">
+            <button class="btn btn-yes">Yess!!</button>
+          </a>
+          <button class="btn" id="runaway-btn">No!!</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 1. ADD BACKGROUND FLOATING TEXT
+      const bgContainer = document.getElementById("bg-container");
+      const phrases = [
+        "I Love You",
+        "Be Mine",
+        "Apsara",
+        "Forever",
+        "Cutie",
+        "💖",
+        "🥰",
+        "🌹",
+        "My Love",
+        "Only You",
+      ];
+
+      function spawnBackgroundText() {
+        const el = document.createElement("div");
+        el.classList.add("bg-floater");
+        el.innerText = phrases[Math.floor(Math.random() * phrases.length)];
+
+        el.style.left = Math.random() * 90 + "vw";
+        el.style.top = Math.random() * 90 + "vh";
+        el.style.fontSize = Math.random() * 20 + 20 + "px";
+        el.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+        bgContainer.appendChild(el);
+      }
+
+      for (let i = 0; i < 15; i++) {
+        spawnBackgroundText();
+      }
+
+      // 2. FALLING HEARTS
+      function createHeart() {
+        const heart = document.createElement("div");
+        heart.classList.add("heart");
+        heart.innerText = "💗";
+
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.animationDuration = Math.random() * 3 + 3 + "s";
+        heart.style.fontSize = Math.random() * 20 + 10 + "px";
+
+        document.body.appendChild(heart);
+        setTimeout(() => {
+          heart.remove();
+        }, 6000);
+      }
+      setInterval(createHeart, 300);
+
+      // 3. RUNAWAY BUTTON LOGIC
+      const btn = document.getElementById("runaway-btn");
+      let movedToBody = false;
+
+      // Ensure button stays in flow initially, but breaks out when interacted with
+      function runAway(e) {
+        const btnRect = btn.getBoundingClientRect();
+        const btnCenterX = btnRect.left + btnRect.width / 2;
+        const btnCenterY = btnRect.top + btnRect.height / 2;
+
+        const distance = Math.hypot(
+          e.clientX - btnCenterX,
+          e.clientY - btnCenterY,
+        );
+        const offset = 50; // Distance to trigger running
+
+        if (distance < offset) {
+          // If it's the first time running, move it to body to escape the card's transform context
+          if (!movedToBody) {
+            // Calculate current position
+            const currentLeft = btnRect.left;
+            const currentTop = btnRect.top;
+
+            // Move logic
+            document.body.appendChild(btn);
+            btn.style.position = "fixed";
+            btn.style.left = currentLeft + "px";
+            btn.style.top = currentTop + "px";
+            movedToBody = true;
+          }
+
+          // Calculate available space
+          const maxX = window.innerWidth - btnRect.width - 50;
+          const maxY = window.innerHeight - btnRect.height - 50;
+
+          const newX = Math.random() * maxX;
+          const newY = Math.random() * maxY;
+
+          // Apply new coordinates
+          btn.style.left = `${newX}px`;
+          btn.style.top = `${newY}px`;
+        }
+      }
+
+      document.addEventListener("mousemove", runAway);
+
+      // ... existing mousemove code ...
+
+      // ADD THIS FOR MOBILE SUPPORT
+      btn.addEventListener("touchstart", (e) => {
+        // Prevent the click from happening
+        e.preventDefault();
+
+        const btnRect = btn.getBoundingClientRect();
+        const maxX = window.innerWidth - btnRect.width - 20;
+        const maxY = window.innerHeight - btnRect.height - 20;
+
+        const newX = Math.random() * maxX;
+        const newY = Math.random() * maxY;
+
+        btn.style.left = `${newX}px`;
+        btn.style.top = `${newY}px`;
+      });
+    </script>
+  </body>
+</html>
