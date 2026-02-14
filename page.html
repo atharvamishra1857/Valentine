@@ -121,7 +121,7 @@
 
     <div class="pinksection">
       <div class="curvedCard">
-        <h2 class="heading2 animate__backInDown">I knew it!!!</h2>
+        <h2 class="heading2 animate__backInDown">Mazak Kar raha hu!!</h2>
       </div>
     </div>
 
@@ -129,11 +129,8 @@
       <div class="lid-container">🎁</div>
 
       <div class="message-content">
-        <h2>It’s a Date! 🌹</h2>
-        <p>
-          Pick you up at 7 PM? I promise there will be chocolates (and maybe
-          real roses too). Can't wait to see you!
-        </p>
+        <h2>vese, Are you free?</h2>
+        <p>Momos khanne chal rahi hai sham mai, DC ?</p>
       </div>
     </div>
 
@@ -143,21 +140,17 @@
 
     <script>
       let showerInterval;
-      // hehe git
 
       // --- SHOWER ENGINE ---
       function createFallingItem(emoji) {
         const item = document.createElement("div");
         item.classList.add("heart");
         item.innerText = emoji;
-        // 95vw ensures it doesn't spawn exactly on the edge and cause scrollbar
         item.style.left = Math.random() * 95 + "vw";
         item.style.animationDuration = Math.random() * 3 + 2 + "s";
         item.style.fontSize = Math.random() * 10 + 50 + "px";
         item.style.top = "-60px";
-
         document.body.appendChild(item);
-
         setTimeout(() => {
           item.remove();
         }, 6000);
@@ -170,15 +163,9 @@
         }, 300);
       }
 
-      // --- 2. FIX: MEGA CONFETTI FUNCTION ---
+      // --- MEGA CONFETTI FUNCTION ---
       function shootMassiveConfetti() {
-        // Safety check: ensure library is loaded
-        if (typeof confetti === "undefined") {
-          console.error(
-            "Confetti library not loaded! Check internet connection/CDN.",
-          );
-          return;
-        }
+        if (typeof confetti === "undefined") return;
 
         const duration = 3000;
         const animationEnd = Date.now() + duration;
@@ -188,34 +175,21 @@
           ticks: 100,
           zIndex: 2000,
         };
-
         const randomInRange = (min, max) => Math.random() * (max - min) + min;
 
-        // Try to create emoji shapes, fallback to empty array if not supported
         let emojiShapes = [];
         try {
           if (typeof confetti.shapeFromText === "function") {
             emojiShapes.push(confetti.shapeFromText({ text: "🎉", scalar: 3 }));
             emojiShapes.push(confetti.shapeFromText({ text: "🎈", scalar: 3 }));
-            emojiShapes.push(confetti.shapeFromText({ text: "⭐", scalar: 3 }));
           }
-        } catch (e) {
-          console.warn(
-            "Shape from text not supported, falling back to standard confetti:",
-            e,
-          );
-        }
+        } catch (e) {}
 
         const interval = setInterval(function () {
           const timeLeft = animationEnd - Date.now();
-
-          if (timeLeft <= 0) {
-            return clearInterval(interval);
-          }
-
+          if (timeLeft <= 0) return clearInterval(interval);
           const particleCount = 70 * (timeLeft / duration);
 
-          // Fire standard confetti (circles, squares)
           confetti(
             Object.assign({}, defaults, {
               particleCount,
@@ -228,104 +202,50 @@
               origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
             }),
           );
-
-          // Fire Emoji Confetti bursts occasionally
-          if (emojiShapes.length > 0) {
-            if (Math.random() > 0.7) {
-              confetti(
-                Object.assign({}, defaults, {
-                  shapes: emojiShapes,
-                  scalar: 2,
-                  particleCount: 15,
-                  spread: 100,
-                  origin: {
-                    x: randomInRange(0.2, 0.8),
-                    y: Math.random() - 0.2,
-                  },
-                }),
-              );
-            }
-          }
         }, 200);
-
-        // Final big burst at the center
-        setTimeout(() => {
-          confetti({
-            particleCount: 200,
-            spread: 150,
-            origin: { y: 0.6 },
-            shapes: ["circle", "square"],
-            colors: ["#FFD700", "#FF69B4", "#00BFFF"],
-          });
-        }, 1500);
       }
 
       // ============================================
       // THE TIMELINE
       // ============================================
-
-      // 0s: Start Candies
       startShower("🎊");
 
-      // 6s: Phase 1 - Dim Background & Pop up Closed Box
       setTimeout(() => {
         document.getElementById("overlay").classList.add("active");
         document.getElementById("mystery-box").classList.add("appear");
       }, 6000);
 
-      // 7.5s: Phase 2 - Open Box & MEGA Confetti
       setTimeout(() => {
         document.getElementById("mystery-box").classList.add("open");
-        shootMassiveConfetti(); // Fire the big one
+        shootMassiveConfetti();
       }, 7500);
 
-      // 10s: Phase 3 - Switch to Roses
       setTimeout(() => {
         startShower("💐");
       }, 10000);
 
-      // --- MUSIC FADE-IN CONFIGURATION ---
+      // ============================================
+      // INSTANT MUSIC FIX
+      // ============================================
       const music = document.getElementById("mySong");
-      const targetVolume = 0.4; // Max volume (0.0 to 1.0)
-      const fadeDuration = 200; // How fast the volume increases (in ms)
-      const volumeStep = 0.05; // How much to increase per step
 
-      function fadeInAudio() {
-        music.volume = 0; // Start silent
-        music
-          .play()
-          .then(() => {
-            // Start the fade-in loop
-            const fadeInterval = setInterval(() => {
-              // If we haven't reached the target volume yet...
-              if (music.volume < targetVolume) {
-                // Increase volume, but ensure we don't go over 1.0
-                music.volume = Math.min(
-                  music.volume + volumeStep,
-                  targetVolume,
-                );
-              } else {
-                // Target reached, stop the loop
-                clearInterval(fadeInterval);
-              }
-            }, fadeDuration);
-          })
-          .catch((error) => {
-            // BROWSER POLICY BLOCK:
-            // If the browser blocks autoplay, we wait for the FIRST interaction
-            console.log("Autoplay blocked. Waiting for click.");
-            document.body.addEventListener(
-              "click",
-              () => {
-                fadeInAudio(); // Try again when they click
-              },
-              { once: true },
-            );
-          });
+      function playMusicImmediately() {
+        music.volume = 1.0; // Set full volume immediately
+        music.play().catch((error) => {
+          console.log("Autoplay blocked. Waiting for user interaction.");
+          // Add a one-time click listener to the entire body to start music
+          document.body.addEventListener(
+            "click",
+            () => {
+              music.play();
+            },
+            { once: true },
+          );
+        });
       }
 
-      // Run this as soon as the page loads
-      window.addEventListener("load", fadeInAudio);
+      // "DOMContentLoaded" runs as soon as HTML is read (faster than "load")
+      document.addEventListener("DOMContentLoaded", playMusicImmediately);
     </script>
   </body>
 </html>
